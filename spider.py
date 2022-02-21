@@ -152,7 +152,9 @@ class SpiderCalculator:
             Toon(name='\tSpiderling 10', speed=150),
         ]
 
-    def calculate_turn_order(self):
+    def calculate_turn_order(self, *, turns):
+        assert turns > 2
+        
         turn_order = get_turn_order(
             toons=self.toons + self.first_load, max_turns=1,
         )
@@ -165,7 +167,7 @@ class SpiderCalculator:
         turn_order.extend(
             get_turn_order(
                 toons=self.toons + self.first_load + self.second_load + self.third_load,
-                max_turns=25,
+                max_turns=turns - 2,
             )
         )
         return turn_order
@@ -214,7 +216,7 @@ if __name__ == "__main__":
     ]
 
     calculator = SpiderCalculator(toons=toons)
-    print("\n".join(str(t) for t in calculator.calculate_turn_order()))
+    print("\n".join(str(t) for t in calculator.calculate_turn_order(turns=27)))
 
     # $ python spider.py 
     # CH1 (300 spd)
