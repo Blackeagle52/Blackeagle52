@@ -5,7 +5,8 @@ from unittest import TestCase
 
 
 TICK_SPEED_RATIO = decimal.Decimal('0.07')
-FULL_TM = decimal.Decimal('100') # /  TICK_SPEED_RATIO
+FULL_TM = decimal.Decimal('100')
+
 
 class Toon:
     def __init__(self, *, name, speed):
@@ -73,7 +74,7 @@ class TurnOrderTestCase(TestCase):
         self.assertEqual(round(self.brago.tm), 85, self.brago.tm)
         self.assertEqual(round(self.skull.tm), 84, self.skull.tm)
 
-        # TM of those who did have a turn
+        # TM of those who did have a turn, DWJ calculator shows tm > 100
         self.assertEqual(round(self.kreela.tm), 0, self.kreela.tm)
 
     def test_cb_turn_1(self):
@@ -171,39 +172,38 @@ class SpiderCalculator:
 
 
 def find_speed_tune():
-    toons = [
-        Toon(name='CH1', speed=300),
-        Toon(name='CH2', speed=300),
-        Toon(name='Ignatius', speed=255),
-        Toon(name='Crypt King', speed=255),
-        Toon(name='Renegade', speed=150),
-    ]
+    for speed_rg in range(125, 175):
+        for speed_ck in range(200, 275):
+            for speed_ig in range(speed_ck, 275):
+                for speed_ch2 in range(speed_ig, 310):
+                    for speed_ch1 in range(speed_ch2, 310):
+                        toons = [
+                            Toon(name='CH1', speed=speed_ch1),
+                            Toon(name='CH2', speed=speed_ch2),
+                            Toon(name='Ignatius', speed=speed_ig),
+                            Toon(name='Crypt King', speed=speed_ck),
+                            Toon(name='Renegade', speed=speed_rg),
+                        ]
 
-    # for speed_rg in range(125, 175):
-    #     for speed_ck in range(200, 275):
-    #         for speed_ig in range(speed_ck, 275):
-    #             for speed_ch2 in range(speed_ig, 310):
-    #                 for speed_ch1 in range(speed_ch2, 310):
-    #                     toons[0].speed = speed_ch1
-    #                     toons[1].speed = speed_ch2
-    #                     toons[2].speed = speed_ig
-    #                     toons[3].speed = speed_ck
-    #                     toons[4].speed = speed_rg
+                        calculator = SpiderCalculator(toons=toons)
+                        turn_order = calculator.calculate_turn_order()
 
-    #                     calculator = SpiderCalculator(toons=toons)
-    #                     turn_order = calculator.calculate_turn_order()
-
-    #                     counter = Counter(t.name for t in turn_order)
-    #                     if (
-    #                             counter['\tSpiderling 1'] == 2 and
-    #                             counter['Crypt King'] == 3 and
-    #                             '\tSpiderling 1' in (turn_order[-1].name, turn_order[-2].name)
-    #                     ):
-    #                         print("\n".join(str(t) for t in turn_order))
-    #                         return
+                        counter = Counter(t.name for t in turn_order)
+                        if (
+                                counter['\tSpiderling 1'] == 2 and
+                                counter['Crypt King'] == 3 and (
+                                    '\tSpiderling 1' == turn_order[-1].name or (
+                                        '\tSpiderling 1' == turn_order[-2].name and
+                                        'Crypt King' != turn_order[-2].name
+                                    )
+                                )
+                        ):
+                            print("\n".join(str(t) for t in turn_order))
+                            return
 
 if __name__ == "__main__":
-    find_speed_tune()
+    # Don't uncomment, script takes a while to return a comp!
+    # find_speed_tune()
 
     toons = [
         Toon(name='CH1', speed=300),
@@ -214,15 +214,4 @@ if __name__ == "__main__":
     ]
 
     calculator = SpiderCalculator(toons=toons)
-    turn_order = calculator.calculate_turn_order()
-    for champ in turn_order:
-        print(str(champ))
-
-    # Current comp
-    # toons = [
-    #     Toon(name='CH1', speed=decimal.Decimal('231.69')),
-    #     Toon(name='CH2', speed=decimal.Decimal('222')),
-    #     Toon(name='Ignatius', speed=230),
-    #     Toon(name='Crypt King', speed=221),
-    #     Toon(name='Renegade', speed=decimal.Decimal('216.39')),
-    # ]
+    print("\n".join(str(t) for t in calculator.calculate_turn_order()))
